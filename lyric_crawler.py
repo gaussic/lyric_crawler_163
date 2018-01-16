@@ -50,11 +50,12 @@ def crawl_lyrics(art_id):
             song_name = link.text.strip().replace(' ', '_').replace('/', '_')
             song_id = link.get('href').split('=')[1]
             html = get_html(song_url.format(song_id))  # 抓取歌词
+
             try:  # 存在无歌词的歌曲，直接忽略
                 lyric_json = json.loads(html)
                 lyric_text = lyric_json['lrc']['lyric']
-                with open(os.path.join(album_dir, song_name + '.txt'), 'w', encoding='utf-8') as f:
-                    f.write(lyric_text)
+
+                open(os.path.join(album_dir, song_name + '.txt'), 'w', encoding='utf-8').write(lyric_text)
                 print("    " + song_name + ", URL: " + song_url.format(song_id))
             except:
                 print("    " + song_name + ": 无歌词, URL: " + song_url.format(song_id))
@@ -66,10 +67,10 @@ def find_artist_ids():
     url = 'http://music.163.com/api/artist/top?limit=100&offset=0'
     html = get_html(url)
     artists = json.loads(html)['artists']
-    with open('artists.txt', 'w', encoding='utf-8', errors='ignore') as f:
+    with open('artists.txt', 'w', encoding='utf-8', errors='ignore') as fa:
         for artist in artists:
             artist_name = artist['name'].strip().replace(" ", "_")
-            f.write(artist_name + ' ' + str(artist['id']) + '\n')
+            fa.write(artist_name + ' ' + str(artist['id']) + '\n')
 
 
 if __name__ == '__main__':
@@ -77,20 +78,3 @@ if __name__ == '__main__':
         for line in f:
             art_id = line.strip().split()[1]
             crawl_lyrics(art_id)
-            # re_proxy()
-
-
-# """抓取一整个歌手的所有歌词"""
-# # 周杰伦：6452
-# html = get_html(start_url.format('6452'))  # 先抓该歌手的专辑列表
-# soup = BeautifulSoup(html, 'lxml')
-#
-# artist = soup.find('h2', id='artist-name').text.strip().replace(' ', '_')
-# artist_dir = 'data/' + artist
-# if not os.path.exists(artist_dir):  # 歌手目录
-#     os.mkdir(artist_dir)
-# print("歌手名：", artist)
-#
-# albums = soup.find('ul', class_='m-cvrlst').find_all('a', class_='msk')  # 专辑列表
-# for album in albums:
-#     print(album)
