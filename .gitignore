@@ -5,3 +5,4 @@
 __pycache__
 *.pyc
 *proxy.py
+data_clean

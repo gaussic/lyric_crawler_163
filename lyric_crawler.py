@@ -78,3 +78,5 @@ if __name__ == '__main__':
         for line in f:
             art_id = line.strip().split()[1]
             crawl_lyrics(art_id)
+
+find_artist_ids()
