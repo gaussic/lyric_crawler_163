@@ -6,9 +6,6 @@ import shutil
 
 base_dir = "data"
 new_dir = "data_clean"
-if os.path.exists(new_dir):
-    shutil.rmtree(new_dir)
-os.mkdir(new_dir)
 
 
 def open_file(filename, mode='r'):
@@ -28,11 +25,13 @@ def clean_text(filename):
     text = re.sub(r"作曲.*\n", "", text)
     text = re.sub(r"编曲.*\n", "", text)
     text = re.sub(r"演唱.*\n", "", text)
-    text = re.sub(r"制作人.*\n", "", text).strip()
+    text = re.sub(r"制作人.*\n", "", text)
+    text = re.sub(r".*:", "", text)
+    text = re.sub(r".*：", "", text).strip()
     return text
 
 
-def read_conver_words(filename):
+def read_convert_words(filename):
     """读取繁简字体转换表"""
     tr_to_cn = {}
     with open_file(filename) as f:
@@ -52,22 +51,27 @@ def convert_tr_to_cn(sentence, tr_to_cn):
     return cn_s
 
 
-cnt = 0   # 编号
-tr_to_cn = read_conver_words('tr-cn.txt')
-for cur_dir in os.walk(base_dir):  # 遍历所有文档
-    for filename in cur_dir[2]:
-        try:
-            file_dir = os.path.join(cur_dir[0], filename)
-            data = clean_text(file_dir)
+def lyric_filter():
+    if os.path.exists(new_dir):
+        shutil.rmtree(new_dir)
+    os.mkdir(new_dir)
 
-            if is_chinese(data) and len(data) >= 200:  # 中文，200字符以上
-                data = convert_tr_to_cn(data, tr_to_cn)   # 转换为简体
+    cnt = 0  # 编号
+    tr_to_cn = read_convert_words('tr-cn.txt')
+    for cur_dir in os.walk(base_dir):  # 遍历所有文档
+        for filename in cur_dir[2]:
+            try:
+                data = clean_text(os.path.join(cur_dir[0], filename))
+                if is_chinese(data) and len(data) >= 200:  # 中文，200字符以上
+                    data = convert_tr_to_cn(data, tr_to_cn)  # 转换为简体
+                    filename = convert_tr_to_cn(filename, tr_to_cn)
 
-                filename = convert_tr_to_cn(filename, tr_to_cn)
+                    new_file = ''.join(filename.split('.')[:-1]) + ' - ' + str(cnt) + '.txt'  # 防止重名覆盖，打个编号
+                    open_file(os.path.join(new_dir, new_file), 'w').write(data)  # 汇总写入新目录
+                    cnt += 1
+            except:
+                pass
 
-                filename = ''.join(filename.split('.')[:-1])
-                new_file = filename + ' - ' + str(cnt) + '.txt' # 防止重名覆盖，打个编号
-                open_file(os.path.join(new_dir, new_file), 'w').write(data)  # 汇总写入新目录
-                cnt += 1
-        except:
-            pass
+
+if __name__ == '__main__':
+    lyric_filter()
