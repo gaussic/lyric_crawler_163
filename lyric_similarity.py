@@ -59,7 +59,7 @@ class DocSimilarity(object):
                 pass
             if cnt % 2000 == 0:
                 print('已处理：', cnt, '保留：', yes)
-        print("保留歌词数：", cnt)
+        print("保留歌词数：", yes)
 
 
 if __name__ == '__main__':
