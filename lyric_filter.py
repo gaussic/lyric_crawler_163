@@ -32,14 +32,42 @@ def clean_text(filename):
     return text
 
 
-cnt = 0
+def read_conver_words(filename):
+    """读取繁简字体转换表"""
+    tr_to_cn = {}
+    with open_file(filename) as f:
+        for line in f:
+            key, value = line.strip().split()
+            tr_to_cn[key] = value
+    return tr_to_cn
+
+
+def convert_tr_to_cn(sentence, tr_to_cn):
+    """繁简转换"""
+    cn_s = ''
+    for x in sentence:
+        if x in tr_to_cn:
+            x = tr_to_cn[x]
+        cn_s += x
+    return cn_s
+
+
+cnt = 0   # 编号
+tr_to_cn = read_conver_words('tr-cn.txt')
 for cur_dir in os.walk(base_dir):  # 遍历所有文档
     for filename in cur_dir[2]:
         try:
             file_dir = os.path.join(cur_dir[0], filename)
             data = clean_text(file_dir)
+
             if is_chinese(data) and len(data) >= 200:  # 中文，200字符以上
-                open_file(os.path.join(new_dir, str(cnt) + ' - ' + filename), 'w').write(data)  # 汇总写入新目录
-                cnt += 1  # 防止重名，打个编号
+                data = convert_tr_to_cn(data, tr_to_cn)   # 转换为简体
+
+                filename = convert_tr_to_cn(filename, tr_to_cn)
+
+                filename = ''.join(filename.split('.')[:-1])
+                new_file = filename + ' - ' + str(cnt) + '.txt' # 防止重名覆盖，打个编号
+                open_file(os.path.join(new_dir, new_file), 'w').write(data)  # 汇总写入新目录
+                cnt += 1
         except:
             pass
